@@ -2,81 +2,79 @@
 #include <stdlib.h>
 
 struct tree{
-    struct tree* left;
     struct tree* right;
+    struct tree* left;
     int data;
 };
-
-struct tree* create(int value){
-    struct tree* new = (struct tree*)malloc(sizeof(struct tree));
-    new->data=value;
-    new->left=NULL;
+struct tree* create(int data){
+    struct tree* new=(struct tree*)malloc(sizeof(struct tree));
+    new->data=data;
     new->right=NULL;
+    new->left=NULL;
     return new;
 }
 
-struct tree* insert(struct tree* root,int value){
+struct tree* insert(struct tree* root,int val){
     if(root==NULL){
-        return create(value);
-    }
-    if(value<root->data){
-        root->left= insert(root->left,value);
-    }else if(value>root->data){
-        root->right= insert(root->right,value);
+        return create(val);
+    }else if(root->data>val){
+        root->right=insert(root->right,val);
+    }else if(root->data<val){
+        root->left=insert(root->left,val);
     }
     return root;
 }
-void inorder(struct tree* root) {
+struct tree* search(struct tree* root,int val){
+    if(root==NULL){
+        return root;
+    }else if(root->data>val){
+        search(root->right,val);
+    }else if(root->data<val){
+        search(root->left,val);
+    }
+
+}
+void inorder(struct tree* root){
     if (root == NULL) {
         return;
     }
     inorder(root->left);
-    printf("%d ", root->data);
+    printf("%d",root->data);
     inorder(root->right);
 }
 
-struct tree* search(struct tree*root,int key){
-    if(root==NULL || root->data==key){
-        return root;
-    }else if(key>root->data){
-        search(root->right,key);
-    }else{
-        search(root->left,key);
-    }
-}
-struct tree* findmin(struct tree* node){
-    struct tree* curr=node;
+struct tree* min(struct tree* root){
+    struct tree* curr=root;
     while(curr->left!=NULL){
         curr=curr->left;
     }
     return curr;
 }
-struct tree*delete(struct tree*root,int val){
+
+struct tree* delete(struct tree* root,int val){
     if(root==NULL){
         return root;
     }
-    if(val>root->data){
-        root->right= delete(root->right,val);
-    }else if(val<root->data){
-        root->left= delete(root->left,val);
+    if(root->data>val){
+        root->right=delete(root->right,val);
+    }else if(root->data<val){
+        root->left=delete(root->left,val);
     }else{
         if(root->left==NULL){
-            struct tree*temp=root->right;
+            struct tree* temp=root->right;
             free(root);
             return temp;
         }else if(root->right==NULL){
-            struct tree*temp=root->left;
+            struct tree* temp=root->left;
             free(root);
             return temp;
         }
-        //two children
-        struct tree* temp=findmin(root->right);
+        struct tree* temp=min(root->right);
         temp->data=root->data;
-        root->right=delete(root->right,temp->data);
+        delete(root->right,temp->data);
     }
     return root;
 }
-
 int main(){
     int inp;
     struct tree*root=NULL;
@@ -109,5 +107,4 @@ int main(){
         printf("FOUND\n");
     }
     return 0;
-
 }
