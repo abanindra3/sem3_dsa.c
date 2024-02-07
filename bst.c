@@ -55,9 +55,9 @@ struct tree* delete(struct tree* root,int val){
     if(root==NULL){
         return root;
     }
-    if(root->data>val){
+    if(root->data< val){
         root->right=delete(root->right,val);
-    }else if(root->data<val){
+    }else if(root->data> val){
         root->left=delete(root->left,val);
     }else{
         if(root->left==NULL){
@@ -70,7 +70,7 @@ struct tree* delete(struct tree* root,int val){
             return temp;
         }
         struct tree* temp=min(root->right);
-        temp->data=root->data;
+        root->data=temp->data;
         delete(root->right,temp->data);
     }
     return root;
