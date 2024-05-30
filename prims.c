@@ -1,64 +1,110 @@
+// Online C compiler to run C program online
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
-
-#define vv 5
-
-int minkey(int key[],bool mst[]){
-    int min=INT_MAX, mini;
-
-    for(int v=0;v<vv;v++){
-        if(mst[v]==false && key[v]<min){
-            mini=v;
-            min=key[v];
+#define v 5
+#define max INT_MAX
+struct node{
+    int data;
+    struct node* next;
+    int wt;
+};
+struct graph{
+    int vertices;
+    struct node** adjl;
+};
+struct node*createn(int data,int wtt){
+    struct node* neew=(struct node*)malloc(sizeof(struct node));
+    neew->data=data;
+    neew->wt=wtt;
+    return neew;
+}
+struct graph* create(int vertices){
+    struct graph* graph=(struct graph*)malloc(sizeof(struct graph));
+    graph->adjl=(struct node**)malloc(sizeof(struct node*) *vertices);
+    graph->vertices=vertices;
+    for(int i=0;i<vertices;i++){
+        graph->adjl[i]=NULL;
+    }
+    return graph;
+}
+struct graph* add(struct graph* graph,int src,int dest,int wt){
+    struct node* news=createn(dest,wt);
+    news->next=graph->adjl[src];
+    graph->adjl[src]=news;
+    struct node* newd=createn(src,wt);
+    newd->next=graph->adjl[dest];
+    graph->adjl[dest]=newd;
+    return graph;
+}
+int mink(int dist[],bool mst[]){
+    int mini,min=max;
+    for(int i=0;i<v;i++){
+        if(mst[i]==false && min>dist[i]){
+            mini=i;
+            min=dist[i];
         }
     }
     return mini;
 }
-void print(int parent[],int graph[vv][vv]){
+void print(int parent[], struct graph* graph) {
     printf("EDGE \t WEIGHT\n");
-    for(int i=1;i<vv;i++){
-        printf("%d-%d \t %d \n",parent[i],i,graph[i][parent[i]]);
-
+    for (int i = 1; i < v; i++) {
+        int wt = -1;
+        struct node* temp = graph->adjl[i];
+        while (temp && temp->data != parent[i])
+            temp = temp->next;
+        if (temp)
+            wt = temp->wt;
+        printf("%d-%d \t %d \n", parent[i], i, wt);
     }
 }
-void prims(int graph[vv][vv]){
-    int parent[vv];  // Array to store constructed MST
-    int key[vv];     // Key values used to pick minimum weight edge in cut
-    bool mstSet[vv]; // To represent set of vertices not yet included in MST
-    
-    for (int i = 0; i < vv; i++) {
-        key[i] = INT_MAX;
-        mstSet[i] = false;
-    }
-    key[0]=0;// Make key 0 so that this vertex is picked as first vertex
-    parent[0] = -1;  // First node is always root of MST
 
-    for(int count=0;count<vv-1;count++){
-        int u=minkey(key,mstSet);
-        mstSet[u]=true;
-    
-        for (int v = 0; v < vv; v++) {
-            if (graph[u][v] && mstSet[v] == false && graph[u][v] < key[v]) {
-                parent[v] = u;
-                key[v] = graph[u][v];
+void prims(struct graph*graph){
+    int dist[v];
+    int parent[v];
+    bool mst[v];
+    for(int i=0;i<v;i++){
+        mst[i]=false;
+        dist[i]=max;
+    }
+    parent[0]=-1;
+    dist[0]=0;
+    for(int count=0;count<v-1;count++){
+        int u=mink(dist,mst);
+        mst[u]=true;
+        
+        struct node* temp = graph->adjl[u];
+        while (temp != NULL) {
+            int w = temp->data;
+            int wt = temp->wt;
+            if (!mst[w] && wt < dist[w]) {
+                parent[w] = u;
+                dist[w] = wt;
             }
+            temp = temp->next;
         }
     }
-    
     print(parent, graph);
 }
-
 int main() {
-    int graph[vv][vv] = {
-        {0, 2, 0, 6, 0},
-        {2, 0, 3, 8, 5},
-        {0, 3, 0, 0, 7},
-        {6, 8, 0, 0, 9},
-        {0, 5, 7, 9, 0}
-    };
+    printf("vertices=");
+    int vv;
+    scanf("%d", &vv);
+    struct graph* graph = create(vv);
     
+    // Taking input for edges
+    int edges;
+    printf("Enter number of edges: ");
+    scanf("%d", &edges);
+
+    for (int i = 0; i < edges; i++) {
+        int src, dest, wt;
+        printf("Enter source, destination, and weight for edge %d: ", i + 1);
+        scanf("%d %d %d", &src, &dest, &wt);
+        graph = add(graph, src, dest, wt);
+    }
     prims(graph);
-    
     return 0;
 }
